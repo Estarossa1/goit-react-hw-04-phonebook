@@ -1,69 +1,74 @@
-import { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import ContactForm from './ContactForm/ContactForm'; 
+import ContactForm from './ContactForm/ContactForm';
 import ContactList from './ContactList/ContactList';
 import Filter from './Filter/Filter';
 import Footer from './Footer/Footer';
-import css from './App.module.css';
+import { AppContainer, AppHeading } from './App.styled';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-export class App extends Component {
-  state = {
-    contacts: [
-      {id: 'id-1', name: 'Rosie Simpson', number: '459-12-56'},
-      {id: 'id-2', name: 'Hermione Kline', number: '443-89-12'},
-      {id: 'id-3', name: 'Eden Clements', number: '645-17-79'},
-      {id: 'id-4', name: 'Annie Copeland', number: '227-91-26'},
-    ],
-    filter: '',
+const notify = {
+  error: message => toast.error(message),
+  success: message => toast.success(message),
+};
+
+const KEY = 'contacts';
+
+export const App = () => {
+  const [filter, setFilter] = useState('');
+  const [contacts, setContacts] = useState(() => {
+    return JSON.parse(localStorage.getItem(KEY)) ?? [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(KEY, JSON.stringify(contacts));
+  }, [contacts]);
+
+  const handleFilterChange = e => {
+    setFilter(e.target.value);
   };
 
-  handleFilterChange = event => {
-    this.setState({ filter: event.target.value });
-  };
-
-  handleAddContact = newContact => {
-    const { contacts } = this.state;
+  const handleAddContact = newContact => {
     const isExistingContact = contacts.some(
       contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
     );
 
     if (isExistingContact) {
-      alert(`${newContact.name} is already in contacts`);
+      notify.error(`${newContact.name} is already in contacts`);
       return;
     }
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }));
+
+    setContacts(prevContacts => [...prevContacts, newContact]);
+    notify.success(`${newContact.name} added to contacts`);
   };
 
-  handleDeleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+  const handleDeleteContact = contactId => {
+    setContacts(prevContacts => prevContacts.filter(
+      contact => contact.id !== contactId
+    ));
   };
 
-  render() {
-    const { contacts, filter } = this.state;
-    const filteredContacts = contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter.toLowerCase())
-    );
+  const filteredContacts = contacts.filter(contact => 
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
-    return (
-      <div className={css.wraper}>
-        <h1>Phonebook</h1>
-        <ContactForm contacts={contacts} onAddContact={this.handleAddContact} />
+  return (
+    <AppContainer>
+      <ToastContainer autoClose={3000} />
+      <AppHeading>Phonebook</AppHeading>
+      <ContactForm contacts={contacts} onAddContact={handleAddContact} />
 
-        <h2>Contacts</h2>
-        <Filter value={filter} onChange={this.handleFilterChange} />
-        <ContactList
-          contacts={filteredContacts}
-          onDeleteContact={this.handleDeleteContact}
-        />
-        <Footer />
-      </div>
-    );
-  }
-}
+      <h2>Contacts</h2>
+      <Filter value={filter} onChange={handleFilterChange} />
+      <ContactList
+        contacts={filteredContacts}
+        onDeleteContact={handleDeleteContact}
+      />
+      <Footer />
+    </AppContainer>
+  );
+};
 
 App.propTypes = {
   contacts: PropTypes.arrayOf(

@@ -1,20 +1,15 @@
-import { Component } from 'react';
-import css from './Footer.module.css';
-import PropTypes from 'prop-types';
+import React from 'react';
+import { FooterStyled, FooterContent } from './Footer.styled';
 
-export default class Footer extends Component {
-    render() {
-        return (
-            <div className={css.footer}>
-                <p>
-                © 2023 Phonebook. All rights reserved. <br />
-                Created by Estar0ssa1
-                </p>
-            </div>
-        );
-    }
-}
+const Footer = () => {
+    return (
+        <FooterStyled>
+        <FooterContent>
+            © 2023 Phonebook. All rights reserved. <br />
+            Created by Estarossa1
+        </FooterContent>
+        </FooterStyled>
+    );
+};
 
-Footer.propTypes = {
-    children: PropTypes.node,
-}
+export default Footer;
